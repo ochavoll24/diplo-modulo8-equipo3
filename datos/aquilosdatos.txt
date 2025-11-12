@@ -1,0 +1,10 @@
+Capacidad hospitalaria
+
+  Datos: 
+Camas: https://data360.worldbank.org/en/indicator/WEF_TTDI_HOSPBED
+Medicos: https://data360.worldbank.org/en/indicator/WB_WDI_SH_MED_PHYS_ZS
+Poblacion total: https://data360.worldbank.org/en/indicator/WB_WDI_SP_POP_TOTL
+gasto en salud: https://data360.worldbank.org/en/indicator/IMF_COFOG_GEL_GF07
+mortalidad: https://data360.worldbank.org/en/indicator/WB_HNP_SP_DYN_AMRT?view=datatable
+
+También pueden buscar variables en la sección de Data de: https://data.worldbank.org/indicator
