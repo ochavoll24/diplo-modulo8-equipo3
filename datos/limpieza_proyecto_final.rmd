@@ -1,0 +1,328 @@
+---
+title: "Cleandata"
+author: "Alexis Martinez Xospa"
+date: "2025-11-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)    
+library(skimr)        
+library(janitor)      
+library(naniar)       
+library(GGally)       
+library(corrplot)     
+library(lubridate) 
+library(dplyr)
+library(RSQLite)
+```
+
+```{r}
+
+CAMAS <- read.csv("CAMAS.csv", stringsAsFactors = FALSE)
+
+```
+
+```{r}
+MED <- read.csv("MEDICOS.csv", stringsAsFactors = FALSE)
+
+```
+
+```{r}
+POB <- read.csv("POBLACION.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+SAL <- read.csv("GASTO_SALUD.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+ MOR<- read.csv("MORTALIDAD.csv", stringsAsFactors = FALSE)
+```
+
+
+```{r}
+df_CAM_MED  %>% janitor::clean_names()
+```
+
+
+```{r}
+# 2) Vistazo y estructura
+glimpse(df)
+skimr::skim(df)
+
+# 3) NA: conteo y visual
+colSums(is.na(df))
+naniar::gg_miss_var(df)            # % NA por columna
+
+
+# 4) Resúmenes por tipo
+num_cols <- df %>% select(where(is.numeric))
+cat_cols <- df %>% select(where(~is.character(.x) || is.factor(.x)))
+
+summary(num_cols)
+cat_cols %>% summarise(across(everything(), ~n_distinct(.)))  # cardinalidad
+cat_cols %>% map(~janitor::tabyl(.x) %>% janitor::adorn_pct_formatting())  # frecuencias
+
+# 5) Distribuciones (numéricas)
+num_cols %>% 
+  pivot_longer(everything(), names_to = "var", values_to = "val") %>%
+  ggplot(aes(val)) + 
+  geom_histogram(bins = 30) + 
+  facet_wrap(~ var, scales = "free")
+
+
+```
+
+
+```{r}
+df_MED_ALB <- MED %>% filter(REF_AREA_LABEL == "Albania")
+```
+
+
+```{r}
+POB_ALB <- POB %>% filter(REF_AREA_LABEL == "Albania")
+```
+
+```{r}
+skim(df_nuevo)
+```
+
+```{r}
+df_fil_1 %>% 
+  count(REF_AREA_LABEL, OBS_STATUS, name = "n") %>% 
+  arrange(REF_AREA_LABEL, desc(n))
+```
+
+
+```{r}
+df_fil_3 %>% distinct(UNIT_MEASURE)
+```
+
+```{r}
+df_nuevo <- df_2[ , c("AGG_METHOD", "AGG_METHOD_LABEL", "DECIMALS","DECIMALS_LABEL","COMMENT_TS","COMMENT_TS","DATA_SOURCE","DATA_SOURCE_LABEL")]
+```
+
+
+AGG_METHOD	AGG_METHOD_LABEL	DECIMALS	DECIMALS_LABEL	COMMENT_TS	DATA_SOURCE	DATA_SOURCE_LABEL
+
+```{r}
+df_CAM_MED <- left_join(x = MED, y = CAMAS, by = c("REF_AREA_LABEL", "TIME_PERIOD"))
+```
+
+```{r}
+write.csv(df_CAM_MED, "mi_df.csv", row.names = FALSE)
+```
+
+```{r}
+colnames(POB_CAM)
+```
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+
+dbWriteTable(con, "df_CAM_MED", df_CAM_MED, overwrite = TRUE)
+
+```
+
+```{r}
+POB_CAM <- left_join(x = POB, y = CAMAS, by = c("REF_AREA_LABEL", "TIME_PERIOD"))
+```
+
+
+```{r}
+sql_cte <- "
+SELECT
+  \"OBS_VALUE.x\" AS OBS_VALUE_MED
+ , \"OBS_VALUE.y\" AS OBS_VALUE_CAM
+ ,\"INDICATOR_LABEL.x\" AS INDICATOR_LABEL_MED
+ ,\"INDICATOR_LABEL.Y\" AS INDICATOR_LABEL_CAM
+,\"UNIT_MEASURE.x\" AS UNIT_MEASURE_MED
+,\"UNIT_MEASURE.Y\" AS UNIT_MEASURE_CAM
+,\"COMP_BREAKDOWN_1_LABEL.x\" AS COMP_BREAKDOWN_1_LABEL_MED
+,\"COMP_BREAKDOWN_1_LABEL.y\" AS COMP_BREAKDOWN_1_LABEL_CAM
+,\"DATABASE_ID_LABEL.x\" AS DATABASE_ID_LABEL_MED
+,\"DATABASE_ID_LABEL.y\" AS DATABASE_ID_LABEL_CAM
+FROM df_CAM_MED
+"
+
+VIS_1 <- dbGetQuery(con, sql_cte)
+```
+
+
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+
+dbWriteTable(con, "POB_CAM", POB_CAM, overwrite = TRUE)
+
+```
+
+```{r}
+##¿Qué países (o entidades) tienen mayor y menor número de camas hospitalarias por habitante? GRAFICAR Y HACER UN TOP X 
+sql_cte <- "
+SELECT
+REF_AREA_LABEL
+,TIME_PERIOD
+  ,\"OBS_VALUE.x\" AS OBS_VALUE_POB
+ , \"OBS_VALUE.y\" AS OBS_VALUE_CAM
+ ,\"OBS_VALUE.y\" * \"OBS_VALUE.x\" / 10000 as OBS_VALUE_CAM_TOT
+ ,\"INDICATOR_LABEL.x\" AS INDICATOR_LABEL_POB
+ ,\"INDICATOR_LABEL.Y\" AS INDICATOR_LABEL_CAM
+,\"UNIT_MEASURE.x\" AS UNIT_MEASURE_POB
+,\"UNIT_MEASURE.Y\" AS UNIT_MEASURE_CAM
+,\"COMP_BREAKDOWN_1_LABEL.x\" AS COMP_BREAKDOWN_1_LABEL_POB
+,\"COMP_BREAKDOWN_1_LABEL.y\" AS COMP_BREAKDOWN_1_LABEL_CAM
+,\"DATABASE_ID_LABEL.x\" AS DATABASE_ID_LABEL_POB_POB
+,\"DATABASE_ID_LABEL.y\" AS DATABASE_ID_LABEL_CAM
+
+FROM POB_CAM
+
+"
+
+VIS_2 <- dbGetQuery(con, sql_cte)
+```
+
+```{r}
+VIS_2 <- VIS_2 %>%
+  mutate(
+    across(starts_with("OBS_VALUE"), as.numeric),
+    cam_vs_pob = OBS_VALUE_CAM_TOT / OBS_VALUE_POB,
+    TIME_PERIOD_ = ymd(paste0(TIME_PERIOD, "-01-01"))
+  )
+```
+
+
+
+```{r}
+write.csv(VIS_2, "unos.CSV", row.names = FALSE)
+```
+
+
+
+```{r}
+VIS_2_top10 <- VIS_2 %>%
+  filter(
+    year(TIME_PERIOD_) > 2018,
+    COMP_BREAKDOWN_1_LABEL_CAM == "Type: Value"
+  ) %>%
+  mutate(
+    ANIO = year(TIME_PERIOD_)   
+  ) %>%
+  group_by(ANIO) %>%
+  slice_min(order_by = OBS_VALUE_CAM_TOT, n = 10, with_ties = FALSE) %>%
+  ungroup()
+```
+
+
+
+```{r}
+VIS_2_top10_max <- VIS_2 %>%
+  filter(
+    year(TIME_PERIOD_) > 2018,
+    COMP_BREAKDOWN_1_LABEL_CAM == "Type: Value"
+  ) %>%
+  mutate(
+    ANIO = year(TIME_PERIOD_)   
+  ) %>%
+  group_by(ANIO) %>%
+  slice_max(order_by = OBS_VALUE_CAM_TOT, n = 10, with_ties = FALSE) %>%
+  ungroup()
+```
+
+
+
+
+```{r}
+VIS_2_top10 %>%
+  ggplot(aes(
+    x = reorder(REF_AREA_LABEL, OBS_VALUE_CAM_TOT),
+    y = OBS_VALUE_CAM_TOT
+  )) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~ ANIO) +
+  labs(
+    x = "Área",
+    y = "Camas del total de población",
+    title = "Top 10 áreas con menos camas por poblacion  por año"
+  )
+```
+
+```{r}
+VIS_2_top10_max %>%
+  ggplot(aes(
+    x = reorder(REF_AREA_LABEL, OBS_VALUE_CAM_TOT),
+    y = OBS_VALUE_CAM_TOT
+  )) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~ ANIO) +
+  labs(
+    x = "Área",
+    y = "Camas del total de población",
+    title = "Top 10 áreas con mas camas por poblacion  por año"
+  )
+```
+```{r}
+#SE INCLUYE SEGURIDAD SOCIAL
+SALud_ <- SAL %>% filter(TIME_PERIOD > 2018,UNIT_MEASURE_LABEL == "Domestic currency",COMP_BREAKDOWN_1_LABEL=="Sector: Social security funds")
+
+#SE PUEDE CAMBIAR POR Percentage of GDP O Percentage of expenditure
+
+```
+
+```{r}
+SAL %>% distinct(UNIT_MEASURE_LABEL)
+```
+```{r}
+gASTO_dESTINADO_SALUD <- left_join(x = SALud_, y = CAMAS, by = c("REF_AREA_LABEL", "TIME_PERIOD"))
+```
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+
+dbWriteTable(con, "gASTO_dESTINADO_SALUD", gASTO_dESTINADO_SALUD, overwrite = TRUE)
+```
+
+```{r}
+sql_cte <- "
+SELECT
+REF_AREA_LABEL
+,TIME_PERIOD
+  ,\"OBS_VALUE.x\" AS OBS_VALUE_SALUD
+ , \"OBS_VALUE.y\" AS OBS_VALUE_CAM
+ ,\"OBS_VALUE.y\" * \"OBS_VALUE.x\" / 10000 as OBS_VALUE_CAM_SALUD
+ ,\"INDICATOR_LABEL.x\" AS INDICATOR_LABEL_SALUD
+ ,\"INDICATOR_LABEL.Y\" AS INDICATOR_LABEL_CAM
+,\"UNIT_MEASURE.x\" AS UNIT_MEASURE_SALUD
+,\"UNIT_MEASURE.Y\" AS UNIT_MEASURE_CAM
+,\"COMP_BREAKDOWN_1_LABEL.x\" AS COMP_BREAKDOWN_1_LABEL_SALUD
+,\"COMP_BREAKDOWN_1_LABEL.y\" AS COMP_BREAKDOWN_1_LABEL_CAM
+,\"DATABASE_ID_LABEL.x\" AS DATABASE_ID_LABEL_SALUD
+,\"DATABASE_ID_LABEL.y\" AS DATABASE_ID_LABEL_CAM
+
+FROM gASTO_dESTINADO_SALUD
+
+"
+
+VIS_3 <- dbGetQuery(con, sql_cte)
+```
+
+```{r}
+#HACER VISUALIZACION PARA ¿Existe relación entre el gasto en salud y la disponibilidad de camas? 
+
+VIS_3_FINAL <- VIS_3 %>%
+  filter(
+    TIME_PERIOD > 2018,
+    COMP_BREAKDOWN_1_LABEL_CAM == "Type: Value"
+  )
+```
+
