@@ -46,7 +46,7 @@ SAL <- read.csv("GASTO_SALUD.csv", stringsAsFactors = FALSE)
 
 
 ```{r}
-df_CAM_MED  %>% janitor::clean_names()
+MOR  %>% janitor::clean_names()
 ```
 
 
@@ -119,7 +119,7 @@ write.csv(df_CAM_MED, "mi_df.csv", row.names = FALSE)
 ```
 
 ```{r}
-colnames(POB_CAM)
+colnames(MED)
 ```
 
 ```{r}
@@ -324,5 +324,89 @@ VIS_3_FINAL <- VIS_3 %>%
     TIME_PERIOD > 2018,
     COMP_BREAKDOWN_1_LABEL_CAM == "Type: Value"
   )
+
+
+
 ```
+
+
+```{r}
+write.csv(VIS_3, "unos.CSV", row.names = FALSE)
+```
+
+
+```{r}
+min(SAL$TIME_PERIOD)
+```
+
+
+```{r}
+mor_1 <- MOR %>%
+  select(INDICATOR_LABEL,REF_AREA_LABEL,TIME_PERIOD,OBS_VALUE,OBS_STATUS_LABEL,SEX,OBS_STATUS)
+```
+
+```{r}
+sal_1 <- SAL %>%
+  select(REF_AREA_LABEL
+,INDICATOR_LABEL
+,COMP_BREAKDOWN_1_LABEL
+,TIME_PERIOD
+,OBS_VALUE
+,UNIT_MEASURE_LABEL)
+```
+
+
+```{r}
+PR <- DB_mod_mor %>% filter(REF_AREA_LABEL == "Albania",)
+```
+
+```{r}
+sal_1_wide <- sal_1 %>%
+  pivot_wider(
+    id_cols   = c(REF_AREA_LABEL, INDICATOR_LABEL, TIME_PERIOD),
+    names_from  = c(COMP_BREAKDOWN_1_LABEL, UNIT_MEASURE_LABEL),    
+    values_from = OBS_VALUE,
+    names_sep   = "_"                                              
+  )
+
+
+```
+
+```{r}
+POB_1 <- POB %>%
+  select(REF_AREA_LABEL
+,INDICATOR_LABEL
+,TIME_PERIOD
+,OBS_VALUE
+)
+```
+
+
+```{r}
+MED_1 <- MED %>%
+  select(REF_AREA_LABEL
+,INDICATOR_LABEL
+,TIME_PERIOD
+,OBS_VALUE
+)
+```
+
+
+```{r}
+sal_1_widea <- sal_1_wide %>% filter(REF_AREA_LABEL == "Albania",) 
+```
+
+```{r}
+
+DB_mod_mor <- mor_1 %>% 
+  left_join(POB_1,  by = c("REF_AREA_LABEL", "TIME_PERIOD")) %>% 
+  left_join(sal_1_wide,  by = c("REF_AREA_LABEL", "TIME_PERIOD")) %>% 
+  left_join(MED_1,  by = c("REF_AREA_LABEL", "TIME_PERIOD"))
+
+```
+
+```{r}
+write.csv(DB_mod_mor, "DB_mod_mortalidad_MF.CSV", row.names = FALSE)
+```
+
 
