@@ -10,6 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+install.packages("rnaturalearthdata")
+```
+
+
+```{r}
 library(tidyverse)    
 library(skimr)        
 library(janitor)      
@@ -19,6 +24,10 @@ library(corrplot)
 library(lubridate) 
 library(dplyr)
 library(RSQLite)
+library(dplyr)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
 ```
 
 ```{r}
@@ -397,6 +406,11 @@ sal_1_widea <- sal_1_wide %>% filter(REF_AREA_LABEL == "Albania",)
 ```
 
 ```{r}
+ubi <-unique(POB_1$REF_AREA_LABEL) 
+```
+
+
+```{r}
 
 DB_mod_mor <- mor_1 %>% 
   left_join(POB_1,  by = c("REF_AREA_LABEL", "TIME_PERIOD")) %>% 
@@ -406,7 +420,36 @@ DB_mod_mor <- mor_1 %>%
 ```
 
 ```{r}
-write.csv(DB_mod_mor, "DB_mod_mortalidad_MF.CSV", row.names = FALSE)
+write.csv(coords_paises, "ubi_pais.CSV", row.names = FALSE)
 ```
 
+```{r}
+country <- data.frame(
+  REF_AREA_LABEL = sort(unique(POB_1$REF_AREA_LABEL))
+)
+```
+
+
+```{r}
+coords_paises <- rnaturalearth::ne_countries(
+  scale = "medium",
+  returnclass = "sf"
+) |>
+  st_point_on_surface() |>
+  mutate(
+    lon = st_coordinates(geometry)[, 1],
+    lat = st_coordinates(geometry)[, 2]
+  ) |>
+  transmute(
+            
+    REF_AREA_LABEL = name_long,  
+    lat,
+    lon
+  ) |>
+  st_drop_geometry()
+
+
+DB_coords <- country |>
+  left_join(coords_paises, by = "REF_AREA_LABEL")
+```
 
