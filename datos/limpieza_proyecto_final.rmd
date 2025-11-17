@@ -9,9 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-install.packages("rnaturalearthdata")
-```
+
 
 
 ```{r}
@@ -60,24 +58,25 @@ MOR  %>% janitor::clean_names()
 
 
 ```{r}
-# 2) Vistazo y estructura
+# 2) Estructura
 glimpse(df)
 skimr::skim(df)
 
 # 3) NA: conteo y visual
 colSums(is.na(df))
-naniar::gg_miss_var(df)            # % NA por columna
+naniar::gg_miss_var(df)          
 
 
-# 4) Resúmenes por tipo
+# 4) Resúmen 
 num_cols <- df %>% select(where(is.numeric))
 cat_cols <- df %>% select(where(~is.character(.x) || is.factor(.x)))
 
 summary(num_cols)
 cat_cols %>% summarise(across(everything(), ~n_distinct(.)))  # cardinalidad
+
 cat_cols %>% map(~janitor::tabyl(.x) %>% janitor::adorn_pct_formatting())  # frecuencias
 
-# 5) Distribuciones (numéricas)
+# 5) Distribuciones 
 num_cols %>% 
   pivot_longer(everything(), names_to = "var", values_to = "val") %>%
   ggplot(aes(val)) + 
@@ -391,6 +390,17 @@ POB_1 <- POB %>%
 ```
 
 
+
+```{r}
+CAM_1 <- CAMAS %>%
+  select(REF_AREA_LABEL
+,INDICATOR_LABEL
+,COMP_BREAKDOWN_1_LABEL
+,TIME_PERIOD
+,OBS_VALUE
+)
+```
+
 ```{r}
 MED_1 <- MED %>%
   select(REF_AREA_LABEL
@@ -420,7 +430,7 @@ DB_mod_mor <- mor_1 %>%
 ```
 
 ```{r}
-write.csv(coords_paises, "ubi_pais.CSV", row.names = FALSE)
+write.csv(CAM_1, "CAM_1.CSV", row.names = FALSE)
 ```
 
 ```{r}
