@@ -1,0 +1,326 @@
+---
+title: "Preguntas clave"
+author: "Módulo 8, equipo 3"
+date: ""
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r,include=FALSE}
+library(tidyverse)    
+library(skimr)        
+library(janitor)      
+library(naniar)       
+library(GGally)       
+library(corrplot)     
+library(lubridate) 
+library(dplyr)
+library(RSQLite)
+library(readxl)
+library(readr)
+library(ggplot2)
+library(dlookr)
+library(scales)
+library(GGally)
+
+```
+
+
+# 3. Preguntas guía para el proyecto. 
+
+```{r,include=FALSE}
+df_camas <- read_csv("CAMAS.csv")
+```
+
+```{r,include=FALSE}
+head(df_camas)
+```
+
+```{r,include=FALSE}
+df_camas <- janitor::clean_names(df_camas)
+```
+
+```{r,include=FALSE}
+head(df_camas)
+```
+
+
+```{r,include=FALSE}
+df_camas <- df_camas %>% mutate(time_period = as.factor(time_period))
+```
+
+## ¿Cómo ha evolucionado la capacidad hospitalaria en los últimos 10 años?
+
+La base de datos para esta parte del análisis contiene 345 filas, tiene datos correspondientes a tres períodos: 2019, 2021 y 2024. 
+
+```{r,echo=FALSE}
+str(df_camas)
+```
+
+La base de datos solo abarca 5 años; no se observa diferencia entre los tres períodos, acaso se nota una ligera reducción de la media. 
+
+```{r,echo=FALSE}
+ggplot(df_camas, aes(x= time_period, y = obs_value,fill=time_period)) + 
+  stat_boxplot(geom = "errorbar", # Barras error
+               width = 0.25) +    # Grosor barras
+  geom_boxplot()+
+  guides(fill = guide_legend(title = "Año"))+
+   scale_y_continuous(labels = label_number())+
+  labs(title= "Disponibilidad de camas, según año", x = "Año", y = "Camas por cada 10 mil habitantes")+
+  theme("ligth")+
+   theme(legend.position = "none")
+
+``` 
+```{r, echo=FALSE}
+resultados <-df_camas %>%
+  group_by(time_period) %>%
+  summarise(
+    Media = mean(obs_value),
+    DesviacionEstandar = sd(obs_value)
+  )
+print(resultados)
+```
+
+```{r,include=FALSE}
+df_2024 <-df_camas %>% dplyr::filter(time_period==2024)
+df_2024
+```
+
+```{r,include=FALSE}
+top20 <- df_2024 %>%
+  arrange(desc(obs_value)) %>%
+  slice_head(n = 20)
+```
+
+```{r,include=FALSE}
+head(top20)
+```
+
+
+#	¿Qué países (o entidades) tienen mayor y menor número de camas hospitalarias por habitante?
+
+## Veinte países con mayor disponibilidad de camas. 
+
+Sobresalen Japón y Korea del sur, además de países del este de Europa. 
+
+```{r,echo=FALSE}
+ggplot(top20, aes(x = reorder(ref_area_label,obs_value), y = obs_value)) +
+  geom_bar(stat = "identity", fill=4) +
+  coord_flip()+
+labs(title = "Veinte países con más disponibilidad de camas de hospital, 2024", x = "", y = "Camas por cada 10 mil habitantes")+
+   theme(plot.title = element_text(face = "bold",
+                                  color = "midnightblue",
+                                  size = 18))+
+  theme(axis.title = element_text(size = 16,
+                                  color="black",
+                                  face= "italic")) +
+  guides(color= guide_legend(title = ""))+
+  theme(axis.text = element_text(size = 14))+
+  theme(legend.position = "bottom")+
+  theme(legend.text = element_text(colour="black", size=14, 
+                                     face="bold"))
+
+```
+
+## Veinte países con menor disponibilidad de camas.
+
+Como es de esperarse, resaltan países de Asia, África y América Latina. México aparece en el número 16 de entre los países con menor disponibiidad de camas. 
+
+```{r,include=FALSE}
+bottom20 <- df_2024 %>%
+  arrange(obs_value) %>%
+  slice_head(n = 20)
+```
+
+```{r,include=FALSE}
+head(bottom20)
+```
+
+
+```{r,echo=FALSE}
+ggplot(bottom20, aes(x = reorder(ref_area_label,-obs_value), y = obs_value)) +
+  geom_bar(stat = "identity", fill=4) +
+  coord_flip()+
+labs(title = "Veinte países con menos camas de hospital disponibles, 2024", x = "", y = "Camas por cada 10 mil habitantes")+
+   theme(plot.title = element_text(face = "bold",
+                                  color = "midnightblue",
+                                  size = 18))+
+  theme(axis.title = element_text(size = 16,
+                                  color="black",
+                                  face= "italic")) +
+  guides(color= guide_legend(title = ""))+
+  theme(axis.text = element_text(size = 14))+
+  theme(legend.position = "bottom")+
+  theme(legend.text = element_text(colour="black", size=14, 
+                                     face="bold"))
+  
+  
+
+```
+
+
+##	¿Existe relación entre el gasto en salud y la disponibilidad de camas? ¿Hay relación entre la cantidad de médicos y las tasas de mortalidad?
+
+Para este análisis se utilizó una base filtrada sin NA, esto dejó apenas 39 observaciones con 9 variables. Se tomaron los datos correspondientes a 2019 porque es el año con menos datos faltantes.
+
+
+```{r,include=FALSE}
+df_comp <- read_excel("compilada.xlsx")
+```
+
+```{r,echo=FALSE}
+str(df_comp)
+```
+Se consideraron dos variables para el gasto en salud: el gasto en salud como porcentaje del PIB y el gasto en salur en dólares per cápita. El segundo indicador se obtuvo multiplicando el porcentaje del PIB dedicado a salud por el PIB per cápita. La gráfica de ggpairs muestra que las correlaciones entre el gasto en salud y el número de camas son muy débiles (r=207 con % del PIB y r= 0.053 dólares per cápita) y no significativas. Por su parte, el número de médicos está correlacionado negativa y significativamente con la mortalidad femenina (r = -0.497). La correlación con la mortalidad masculina es también negativa, pero más débil (r = -0.327). 
+
+Otras correlaciones importantes son el gasto en salud percápita con las mortalidades femenina y masculina (r=-0.477 y -0.647 respectivamente). Por su parte, el número de camas no está correlacionado significativamente con una reducción de la mortalidad ni tampoco con el gasto en salud per cápita. Esto puede deberse a que el mayor gasto en salud se está haciendo en medicina preventiva y eso ayuda a reducir las tasas de mortalidad sin necesidad de que las personas ocupen camas de hospital. Un ejemplo de este razonamiento es el gasto en vacunas y en sanidad pública.
+
+
+```{r, include=FALSE}
+head(df_comp)
+```
+
+```{r,include=FALSE}
+comp_num <- df_comp %>% select(where(is.numeric),-periodo)
+```
+
+
+
+```{r,echo=FALSE,warning=FALSE}
+ggpairs(comp_num
+        )
+```
+
+Las siguientes gráficas muestran con más detalle la relación entre las variables de interés.
+
+Como se mencionó antes, el gasto en salud, tanto expresado como porcentaje del PIB como en dólares per cápita, muestra relaciones muy débiles con el número de camas disponibles. 
+
+
+```{r,echo=FALSE,warning=FALSE,}
+ggplot(comp_num, aes(x = ga_salud_per, y = camas, color = camas)) +
+  
+  geom_point(colour="red")+
+  
+  labs(title = "Disponibilidad de camas vs gasto en salud", 
+       x= "Gasto en salud percápita en dólares",
+       y= "Camas por 10 mil habitantes") +
+  theme(plot.title = element_text(face = "bold",
+                                  color = "midnightblue",
+                                  size = 18))+
+  theme(axis.title = element_text(size = 16,
+                                  color="black",
+                                  face= "italic")) +
+  theme(axis.text = element_text(size = 14))+
+  guides(color= guide_legend(title = "")) + 
+  theme(legend.title = element_text(color = "lightslategray",
+                                    size = 14))+
+  theme(legend.position = "bottom")+
+  theme(legend.text = element_text(colour="black", size=14, 
+                                     face="bold"))+
+   geom_smooth(method=lm,linetype="dotdash",colour="blue")
+  
+  
+  
+```
+
+
+```{r,echo=FALSE,warning=FALSE}
+ggplot(comp_num, aes(x = gasto_salud_por, y = camas, color = camas)) +
+  
+  geom_point(colour="red")+
+  #coord_cartesian(ylim = c(20, 70))+
+  labs(title = "Disponibilidad de camas vs gasto en salud",
+       x= "Gasto en salud como porcentaje del PIB",
+       y= "Camas por 10 mil habitantes") +
+  theme(plot.title = element_text(face = "bold",
+                                  color = "midnightblue",
+                                  size = 18))+
+  theme(axis.title = element_text(size = 16,
+                                  color="black",
+                                  face= "italic")) +
+  theme(axis.text = element_text(size = 14))+
+  guides(color= guide_legend(title = "")) + 
+  theme(legend.title = element_text(color = "lightslategray",
+                                    size = 14))+
+  theme(legend.position = "bottom")+
+  theme(legend.text = element_text(colour="black", size=14, 
+                                     face="bold"))+
+   geom_smooth(method=lm,linetype="dotdash",colour="blue")
+  
+  
+  
+```
+
+La tasa de mortalidad en la base de datos está en defunciones por cada 100 habitantes, sin embargo, los valores no son consistentes. Por ejemplo, méxico tiene una tasa de mortalidad de 6.16 defunciones por cada 1000 habitantes para 2023, pero el valor hallado en la base para 2022 es de 196 para hombres y 94 para mujeres. Para el análisis no se modificaron los datos.
+
+
+```{r,echo=FALSE,warning=FALSE,}
+ggplot(comp_num, aes(x = medicos, y = mort_fem, color = medicos)) +
+  
+  geom_point(colour="red")+
+  
+  labs(title = "Disponibilidad de médicos vs mortalidad femenina", 
+       x= "Médicos por cada 1000 habitantes",
+       y= "Mortalidad por cada 100 hab.") +
+  theme(plot.title = element_text(face = "bold",
+                                  color = "midnightblue",
+                                  size = 18))+
+  theme(axis.title = element_text(size = 16,
+                                  color="black",
+                                  face= "italic")) +
+  theme(axis.text = element_text(size = 14))+
+  guides(color= guide_legend(title = "")) + 
+  theme(legend.title = element_text(color = "lightslategray",
+                                    size = 14))+
+  theme(legend.position = "bottom")+
+  theme(legend.text = element_text(colour="black", size=14, 
+                                     face="bold"))+
+   geom_smooth(method=lm,linetype="dotdash",colour="blue")
+  
+  
+  
+```
+
+
+
+
+
+```{r,echo=FALSE,warning=FALSE,}
+ggplot(comp_num, aes(x = medicos, y = mort_mas, color = medicos)) +
+  
+  geom_point(colour="red")+
+  
+  labs(title = "Disponibilidad de médicos vs mortalidad masculina", 
+       x= "Médicos por cada 1000 habitantes",
+       y= "Mortalidad por cada 1000 hab.") +
+  theme(plot.title = element_text(face = "bold",
+                                  color = "midnightblue",
+                                  size = 18))+
+  theme(axis.title = element_text(size = 16,
+                                  color="black",
+                                  face= "italic")) +
+  theme(axis.text = element_text(size = 14))+
+  guides(color= guide_legend(title = "")) + 
+  theme(legend.title = element_text(color = "lightslategray",
+                                    size = 14))+
+  theme(legend.position = "bottom")+
+  theme(legend.text = element_text(colour="black", size=14, 
+                                     face="bold"))+
+   geom_smooth(method=lm,linetype="dotdash",colour="blue")
+  
+  
+  
+```
+
+# Conclusión
+
+No se observa un cambio relevante en el número de camas de hospital disponibles entre 2019 y 2024. Los países con más disponibilida de camas por habitante se encuentran en asia (Corea y Japón) y Europa; por su parte, en África y América Latina se ubican los países con menos disponibilidad de camas. México es el país número 16 con menos camas disponibles. 
+
+El número de camas no se explica de manera importante por el gasto en salud; el número de médicos sí está correlacionado con una menor mortalidad sobre todo de las mujeres. 
+
+Las bases de datos no son muy consistentes, los valores de las distintas variables no están disponibles para todos los países y años, por lo que la base de datos con la que se trabajó fue muy limitada. Es necesario hacer una búsqueda de información más detallada para seleccionar variables con menos datos ausentes o bases de datos más completas. 
+
