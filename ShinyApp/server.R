@@ -40,17 +40,17 @@ shinyServer(function(input, output, session) {
   
   output$avg_mortality <- renderText({
     avg_val <- mean(summary_filtered_data()$mortality, na.rm = TRUE)
-    paste0(format(round(avg_val, 2), nsmall = 2), " per 1,000")
+    paste0(format(round(avg_val, 2), nsmall = 2), " x1,000 hab")
   })
   
   output$avg_beds <- renderText({
     avg_val <- mean(summary_filtered_data()$beds, na.rm = TRUE)
-    paste0(format(round(avg_val, 2), nsmall = 2), " per 1,000")
+    paste0(format(round(avg_val, 2), nsmall = 2), " x1,000 hab")
   })
   
   output$avg_physicians <- renderText({
     avg_val <- mean(summary_filtered_data()$physicians, na.rm = TRUE)
-    paste0(format(round(avg_val, 2), nsmall = 2), " per 1,000")
+    paste0(format(round(avg_val, 2), nsmall = 2), " x1,000 hab")
   })
   
   # Summary data table
@@ -80,7 +80,7 @@ shinyServer(function(input, output, session) {
       geom_boxplot(alpha = 0.7) +
       scale_fill_manual(values = country_colors) +
       coord_flip() +
-      labs(x = "Country", y = "Health Spending (USD per capita)", 
+      labs(x = "Country", y = "Health Spending (mio. USD)", 
            title = "Health Spending Distribution by Country") +
       theme_minimal() +
       theme(legend.position = "none")
@@ -95,7 +95,7 @@ shinyServer(function(input, output, session) {
       geom_boxplot(alpha = 0.7) +
       scale_fill_manual(values = country_colors) +
       coord_flip() +
-      labs(x = "Country", y = "Mortality Rate (per 1,000)", 
+      labs(x = "Country", y = "Mortality Rate (x1,000 hab)", 
            title = "Mortality Rate Distribution by Country") +
       theme_minimal() +
       theme(legend.position = "none")

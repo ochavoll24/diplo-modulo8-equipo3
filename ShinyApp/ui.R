@@ -2,7 +2,7 @@
 # ui.R
 shinyUI(
   navbarPage(
-    title = "[WHO] Capacidad Hospitalaria",
+    title = "[WHO] Capacidad Hospitalaria y métricas complementarias",
     theme = bslib::bs_theme(version = 5, bootswatch = "cosmo"),
     windowTitle = "Healthcare Analytics",
     
@@ -56,7 +56,7 @@ shinyUI(
     # SUMMARY TAB
     # ============================================
     tabPanel(
-      "Summary",
+      "Resumen de Resultados",
       icon = icon("chart-bar"),
       
       fluidRow(
@@ -65,8 +65,8 @@ shinyUI(
           tags$div(
             style = "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                      padding: 30px; border-radius: 15px; margin-bottom: 20px; color: white;",
-            h2("Healthcare Data Overview", style = "color: white; margin: 0;"),
-            p("Comprehensive analytics on healthcare metrics across multiple countries (2015-2020)", 
+            h2("Cuidado de la Salud - Métricas y Datos", style = "color: white; margin: 0;"),
+            p("Reporte analítico acerca del cuidado de la salud por país y año (2015-2024). La data no está disponible para todas las opciones, por lo que el reporte cuenta con una pre-selección con lo mejor de los datos.", 
               style = "color: white; opacity: 0.9; margin-top: 10px;")
           )
         )
@@ -77,12 +77,13 @@ shinyUI(
           width = 3,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h4(icon("filter"), " Filter Options"),
+            h4(icon("filter"), " Filtros"),
             pickerInput(
               "summary_country",
-              "Select Country:",
+              "Seleccionar un país:",
               choices = c("All", unique(healthcare_data$country)),
-              selected = "All",
+              selected = c("United States"),
+              multiple = FALSE,
               options = list(
                 `style` = "btn-primary",
                 `live-search` = TRUE,
@@ -91,20 +92,20 @@ shinyUI(
             ),
             sliderTextInput(
               "summary_year",
-              "Year Range:",
+              "Periodo de tiempo (años):",
               choices = seq(min(healthcare_data$yr), max(healthcare_data$yr)),
-              selected = c(min(healthcare_data$yr), max(healthcare_data$yr)),
+              selected = c(2019,2021),
               grid = TRUE,
               force_edges = TRUE
             ),
             br(),
             actionBttn(
               "update_summary",
-              "Update Dashboard",
+              "selecciona y actualiza los visuales",
               style = "gradient",
               color = "primary",
-              block = TRUE,
-              icon = icon("refresh")
+              block = TRUE #,
+              #icon = icon("refresh")
             )
           )
         ),
@@ -120,7 +121,7 @@ shinyUI(
                 icon("dollar-sign", style = "font-size: 2em;"),
                 br(), br(),
                 tags$div(class = "metric-value", style = "color: white;", textOutput("avg_health_spend")),
-                tags$div(class = "metric-label", style = "color: white; opacity: 0.9;", "Avg Health Spending")
+                tags$div(class = "metric-label", style = "color: white; opacity: 0.9;", "Gasto en Salud [prom.;mio. USD]")
               )
             ),
             column(
@@ -131,7 +132,7 @@ shinyUI(
                 icon("heartbeat", style = "font-size: 2em;"),
                 br(), br(),
                 tags$div(class = "metric-value", style = "color: white;", textOutput("avg_mortality")),
-                tags$div(class = "metric-label", style = "color: white; opacity: 0.9;", "Avg Mortality Rate")
+                tags$div(class = "metric-label", style = "color: white; opacity: 0.9;", "Mortalidad [promedio]")
               )
             ),
             column(
@@ -142,7 +143,7 @@ shinyUI(
                 icon("bed", style = "font-size: 2em;"),
                 br(), br(),
                 tags$div(class = "metric-value", style = "color: white;", textOutput("avg_beds")),
-                tags$div(class = "metric-label", style = "color: white; opacity: 0.9;", "Avg Hospital Beds")
+                tags$div(class = "metric-label", style = "color: white; opacity: 0.9;", "Camas de Hospital [promedio]")
               )
             ),
             column(
@@ -153,7 +154,7 @@ shinyUI(
                 icon("user-md", style = "font-size: 2em;"),
                 br(), br(),
                 tags$div(class = "metric-value", style = "color: white;", textOutput("avg_physicians")),
-                tags$div(class = "metric-label", style = "color: white; opacity: 0.9;", "Avg Physicians")
+                tags$div(class = "metric-label", style = "color: white; opacity: 0.9;", "Médicos [promedio]")
               )
             )
           )
@@ -167,7 +168,7 @@ shinyUI(
           width = 12,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("table"), " Data Table"),
+            h3(icon("table"), " Tabla de Datos"),
             DTOutput("summary_table")
           )
         )
@@ -178,7 +179,7 @@ shinyUI(
           width = 6,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("chart-area"), " Health Spending Distribution"),
+            h3(icon("chart-area"), "Gasto en Salud - Distribución"),
             plotlyOutput("health_spend_boxplot", height = "400px")
           )
         ),
@@ -186,7 +187,7 @@ shinyUI(
           width = 6,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("chart-line"), " Mortality Rate Distribution"),
+            h3(icon("chart-line"), "Mortalidad - Distribución"),
             plotlyOutput("mortality_boxplot", height = "400px")
           )
         )
@@ -197,7 +198,7 @@ shinyUI(
     # TRENDS TAB
     # ============================================
     tabPanel(
-      "Trends",
+      "Tendencias",
       icon = icon("chart-line"),
       
       fluidRow(
@@ -206,8 +207,8 @@ shinyUI(
           tags$div(
             style = "background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); 
                      padding: 30px; border-radius: 15px; margin-bottom: 20px; color: white;",
-            h2("Healthcare Trends Over Time", style = "color: white; margin: 0;"),
-            p("Analyze trends and patterns in healthcare metrics", 
+            h2("Tendencias sobre el cuidado de la salud en el tiempo", style = "color: white; margin: 0;"),
+            p("Identificar tendencias y patrones en las métricas de salud disponibles", 
               style = "color: white; opacity: 0.9; margin-top: 10px;")
           )
         )
@@ -218,31 +219,46 @@ shinyUI(
           width = 3,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h4(icon("sliders-h"), " Visualization Controls"),
+            h4(icon("sliders-h"), " Controles"),
             
-            prettyCheckboxGroup(
+            
+            pickerInput(
               "trend_countries",
-              "Select Countries:",
+              "Seleccionar países:",
               choices = unique(healthcare_data$country),
-              selected = c("United States", "Canada", "Germany", "United Kingdom"),
-              status = "primary",
-              shape = "curve",
-              animation = "smooth",
-              icon = icon("check")
+              selected = c("United States", "Canada", "United Kingdom"),
+              multiple = TRUE,
+              options = list(
+                `style` = "btn-primary",
+                `live-search` = TRUE,
+                `size` = 10
+              )
             ),
+            
+            
+            # prettyCheckboxGroup(
+            #   "trend_countries",
+            #   "Select Countries:",
+            #   choices = unique(healthcare_data$country),
+            #   selected = c("United States", "Canada", "Germany", "United Kingdom"),
+            #   status = "primary",
+            #   shape = "curve",
+            #   animation = "smooth",
+            #   icon = icon("check")
+            # ),
             
             br(),
             
             radioGroupButtons(
               "trend_metric",
-              "Select Metric:",
+              "Seleccionar Métrica:",
               choices = list(
                 `<i class='fa fa-dollar-sign'></i> Health Spending` = "health_spend",
                 `<i class='fa fa-heartbeat'></i> Mortality` = "mortality",
                 `<i class='fa fa-bed'></i> Beds` = "beds",
                 `<i class='fa fa-user-md'></i> Physicians` = "physicians"
               ),
-              selected = "health_spend",
+              selected = "beds",
               justified = FALSE,
               direction = "vertical",
               status = "primary"
@@ -254,7 +270,7 @@ shinyUI(
           width = 9,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("chart-line"), " Trend Over Time"),
+            h3(icon("chart-line"), " Tendencia en el tiempo"),
             plotlyOutput("trend_line_plot", height = "450px")
           )
         )
@@ -265,7 +281,7 @@ shinyUI(
           width = 6,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("percentage"), " Year-over-Year Change"),
+            h3(icon("percentage"), " Cambio año contra año"),
             plotlyOutput("yoy_change_plot", height = "400px")
           )
         ),
@@ -273,7 +289,7 @@ shinyUI(
           width = 6,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("flag"), " Country Comparison (Latest Year)"),
+            h3(icon("flag"), " Comparación entre paises - vs. el último año"),
             plotlyOutput("country_comparison_bar", height = "400px")
           )
         )
@@ -284,7 +300,7 @@ shinyUI(
           width = 12,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("th"), " Correlation Heatmap"),
+            h3(icon("th"), " Mapa de Correlación"),
             plotlyOutput("correlation_heatmap", height = "500px")
           )
         )
@@ -295,7 +311,7 @@ shinyUI(
     # ANALYSIS TAB
     # ============================================
     tabPanel(
-      "Analysis",
+      "Análisis",
       icon = icon("calculator"),
       
       fluidRow(
@@ -304,8 +320,8 @@ shinyUI(
           tags$div(
             style = "background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); 
                      padding: 30px; border-radius: 15px; margin-bottom: 20px; color: white;",
-            h2("Multiple Linear Regression Analysis", style = "color: white; margin: 0;"),
-            p("Build and evaluate regression models with custom variable selection", 
+            h2("Análisis de regresión lineal múltiple", style = "color: white; margin: 0;"),
+            p("Construya y evalue modelos de regresión para medir y explicar la relación entre las métricas", 
               style = "color: white; opacity: 0.9; margin-top: 10px;")
           )
         )
@@ -316,16 +332,16 @@ shinyUI(
           width = 3,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h4(icon("cog"), " Model Configuration"),
+            h4(icon("cog"), " Configuración del Modelo"),
             
             pickerInput(
               "dependent_var",
-              label = tags$b("Dependent Variable (Y):"),
+              label = tags$b("Variable Dependiente (Y):"),
               choices = list(
-                "Mortality Rate" = "mortality",
-                "Health Spending" = "health_spend",
-                "Hospital Beds" = "beds",
-                "Physicians" = "physicians"
+                "Mortalidad" = "mortality",
+                "Gasto en Salud" = "health_spend",
+                "Camas de Hospital" = "beds",
+                "Médicos" = "physicians"
               ),
               selected = "mortality",
               options = list(
@@ -337,13 +353,14 @@ shinyUI(
             
             prettyCheckboxGroup(
               "independent_vars",
-              label = tags$b("Independent Variables (X):"),
+              label = tags$b("Variables Independientes (X):"),
               choices = list(
-                "Health Spending" = "health_spend",
-                "Hospital Beds" = "beds",
-                "Physicians" = "physicians",
-                "Population" = "population",
-                "Year" = "yr"
+                "Gasto en Salud" = "health_spend",
+                "Camas de Hospital" = "beds",
+                "Medicos" = "physicians",
+                "Mortalidad" = "mortality",
+                "Población" = "population",
+                "Años" = "yr"
               ),
               selected = c("health_spend", "beds", "physicians"),
               status = "success",
@@ -356,7 +373,7 @@ shinyUI(
             
             actionBttn(
               "run_regression",
-              "Run Regression",
+              "Ejecutar Modelo",
               style = "gradient",
               color = "success",
               block = TRUE,
@@ -368,7 +385,7 @@ shinyUI(
             
             materialSwitch(
               inputId = "show_diagnostics",
-              label = "Show Model Diagnostics",
+              label = "Mostrar diagnóstico del Modelo",
               value = TRUE,
               status = "primary"
             )
@@ -379,7 +396,7 @@ shinyUI(
           width = 9,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("file-alt"), " Regression Results"),
+            h3(icon("file-alt"), " Resultados del Modelo"),
             verbatimTextOutput("regression_summary")
           ),
           
@@ -387,7 +404,7 @@ shinyUI(
             condition = "input.show_diagnostics == true",
             wellPanel(
               style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-              h3(icon("stethoscope"), " Model Diagnostics"),
+              h3(icon("stethoscope"), " Diagnósticos"),
               fluidRow(
                 column(
                   width = 6,
@@ -408,7 +425,7 @@ shinyUI(
           width = 6,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("bullseye"), " Actual vs Predicted Values"),
+            h3(icon("bullseye"), " Valores Actuales vs Predicción"),
             plotlyOutput("actual_vs_predicted", height = "400px")
           )
         ),
@@ -416,7 +433,7 @@ shinyUI(
           width = 6,
           wellPanel(
             style = "background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);",
-            h3(icon("balance-scale"), " Variable Importance"),
+            h3(icon("balance-scale"), " Importancia de Variables"),
             plotlyOutput("coefficient_plot", height = "400px")
           )
         )
@@ -429,7 +446,7 @@ shinyUI(
     footer = tags$div(
       style = "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                padding: 20px; text-align: center; color: white; margin-top: 30px;",
-      p("Healthcare Analytics Dashboard | Built with Shiny & ShinyWidgets", 
+      p("[WHO] Capacidad Hospitalaria y métricas complementarias", 
         style = "margin: 0; font-size: 14px;")
     )
   )

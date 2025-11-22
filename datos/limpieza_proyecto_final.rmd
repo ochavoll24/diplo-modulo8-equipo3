@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)    
 library(skimr)        
 library(janitor)      
-library(naniar)       
+#library(naniar)       
 library(GGally)       
 library(corrplot)     
 library(lubridate) 
@@ -24,8 +24,8 @@ library(dplyr)
 library(RSQLite)
 library(dplyr)
 library(sf)
-library(rnaturalearth)
-library(rnaturalearthdata)
+#library(rnaturalearth)
+#library(rnaturalearthdata)
 ```
 
 ```{r}
@@ -462,4 +462,72 @@ coords_paises <- rnaturalearth::ne_countries(
 DB_coords <- country |>
   left_join(coords_paises, by = "REF_AREA_LABEL")
 ```
+
+
+# data for the shinyapp
+
+```{r}
+
+beds <-
+CAMAS %>% filter(COMP_BREAKDOWN_1_LABEL == "Type: Value" & OBS_VALUE!= 0) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , beds = sum(OBS_VALUE,na.rm = T)/10
+  )
+
+med <-
+MED %>% filter(TIME_PERIOD>= 2019 & OBS_VALUE!= 0) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , physicians = sum(OBS_VALUE,na.rm = T)
+  ) %>% arrange(REF_AREA_LABEL)
+
+pop<-
+POB %>% filter(TIME_PERIOD>= 2019 & OBS_VALUE!= 0) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , population = sum(OBS_VALUE,na.rm = T)/1000000
+  ) %>% arrange(REF_AREA_LABEL)
+
+
+spend<-
+SAL %>% filter(TIME_PERIOD>= 2019 & OBS_VALUE!= 0 & UNIT_MEASURE_LABEL == "Domestic currency" 
+               & COMP_BREAKDOWN_1_LABEL %in% c("Sector: General government","Sector: State governments","Sector: Local government","Sector: Social security funds")
+               ) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , health_spend = sum(OBS_VALUE,na.rm = T)/1000000
+  ) %>% arrange(desc(REF_AREA_LABEL))
+
+mort<-
+MOR %>% filter(TIME_PERIOD>= 2019 & OBS_VALUE!= 0) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , mortality = mean(OBS_VALUE,na.rm = T)
+  ) %>% arrange(desc(REF_AREA_LABEL))
+
+
+beds %>% 
+  full_join(med) %>% 
+  full_join(pop) %>% 
+  full_join(spend) %>% 
+  full_join(mort) %>% 
+  mutate(across(where(is.numeric), ~ replace_na(.x, 0))) %>% 
+  select(
+    yr = TIME_PERIOD
+    ,country = REF_AREA_LABEL
+    ,beds
+    ,physicians
+    ,population
+    ,health_spend
+    ,mortality
+  ) %>% 
+  write.csv(
+    "healthcare_data.csv", row.names = F
+  )
+
+
+```
+
+
 
