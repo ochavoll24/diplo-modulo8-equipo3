@@ -1,0 +1,346 @@
+REF_AREA,REF_AREA_LABEL,TIME_PERIOD,OBS_VALUE
+MLI,Mali,2024,1
+MLI,Mali,2021,1
+MLI,Mali,2019,1
+GTM,Guatemala,2019,2.6
+CIV,Cote d'Ivoire,2024,2.8
+CIV,Cote d'Ivoire,2021,2.8
+CIV,Cote d'Ivoire,2019,2.8
+NPL,Nepal,2024,3
+NPL,Nepal,2021,3
+NPL,Nepal,2019,3
+GTM,Guatemala,2024,4.4
+GTM,Guatemala,2021,4.4
+IND,India,2019,4.8
+BEN,Benin,2024,5
+BEN,Benin,2021,5
+BEN,Benin,2019,5
+IND,India,2024,5.3
+IND,India,2021,5.3
+PAK,Pakistan,2024,6.3
+PAK,Pakistan,2021,6.3
+PAK,Pakistan,2019,6.3
+HND,Honduras,2024,6.4
+HND,Honduras,2021,6.4
+HND,Honduras,2019,6.4
+TZA,Tanzania,2024,7
+TZA,Tanzania,2021,7
+TZA,Tanzania,2019,7
+BGD,Bangladesh,2024,7.9
+BGD,Bangladesh,2021,7.9
+BGD,Bangladesh,2019,7.9
+NGA,Nigeria,2024,8
+NGA,Nigeria,2021,8
+NGA,Nigeria,2019,8
+PRY,Paraguay,2024,8.3
+PRY,Paraguay,2021,8.3
+PRY,Paraguay,2019,8.3
+VEN,"Venezuela, RB",2019,8.6
+VEN,"Venezuela, RB",2024,8.7
+VEN,"Venezuela, RB",2021,8.7
+KHM,Cambodia,2024,9
+KHM,Cambodia,2021,9
+KHM,Cambodia,2019,9
+GHA,Ghana,2024,9
+GHA,Ghana,2021,9
+GHA,Ghana,2019,9
+NIC,Nicaragua,2024,9.3
+NIC,Nicaragua,2021,9.3
+NIC,Nicaragua,2019,9.3
+MEX,Mexico,2024,9.8
+MEX,Mexico,2021,9.8
+IDN,Indonesia,2019,9.9
+PHL,Philippines,2024,9.9
+PHL,Philippines,2021,9.9
+PHL,Philippines,2019,9.9
+MEX,Mexico,2019,10
+MAR,Morocco,2024,10
+MAR,Morocco,2021,10
+IDN,Indonesia,2024,10.4
+IDN,Indonesia,2021,10.4
+SLV,El Salvador,2019,10.6
+CRI,Costa Rica,2024,11
+CRI,Costa Rica,2021,11
+MAR,Morocco,2019,11
+CRI,Costa Rica,2019,11.4
+SLV,El Salvador,2024,12
+SLV,El Salvador,2021,12
+QAT,Qatar,2019,12
+QAT,Qatar,2024,12.5
+QAT,Qatar,2021,12.5
+BOL,Bolivia,2019,12.7
+BOL,Bolivia,2024,12.9
+BOL,Bolivia,2021,12.9
+CMR,Cameroon,2024,13
+CMR,Cameroon,2021,13
+CMR,Cameroon,2019,13
+MWI,Malawi,2024,13
+MWI,Malawi,2021,13
+MWI,Malawi,2019,13
+ARE,United Arab Emirates,2019,13.6
+ARE,United Arab Emirates,2024,13.8
+ARE,United Arab Emirates,2021,13.8
+ECU,Ecuador,2024,13.9
+ECU,Ecuador,2021,13.9
+ECU,Ecuador,2019,13.9
+JOR,Jordan,2019,14
+KEN,Kenya,2024,14
+KEN,Kenya,2021,14
+KEN,Kenya,2019,14
+EGY,"Egypt, Arab Rep.",2024,14.3
+EGY,"Egypt, Arab Rep.",2021,14.3
+EGY,"Egypt, Arab Rep.",2019,14.3
+DOM,Dominican Republic,2019,14.4
+JOR,Jordan,2024,14.7
+JOR,Jordan,2021,14.7
+OMN,Oman,2024,14.7
+OMN,Oman,2021,14.7
+OMN,Oman,2019,14.9
+LAO,Lao PDR,2024,15
+LAO,Lao PDR,2021,15
+LAO,Lao PDR,2019,15
+DOM,Dominican Republic,2024,15.6
+DOM,Dominican Republic,2021,15.6
+IRN,"Iran, Islamic Rep.",2024,15.6
+IRN,"Iran, Islamic Rep.",2021,15.6
+PER,Peru,2024,15.9
+PER,Peru,2021,15.9
+PER,Peru,2019,15.9
+MYS,Malaysia,2019,16.2
+COL,Colombia,2019,16.8
+IRN,"Iran, Islamic Rep.",2019,17
+ZWE,Zimbabwe,2024,17
+ZWE,Zimbabwe,2021,17
+ZWE,Zimbabwe,2019,17
+COL,Colombia,2024,17.1
+COL,Colombia,2021,17.1
+JAM,Jamaica,2024,17.2
+JAM,Jamaica,2021,17.2
+BHR,Bahrain,2024,17.4
+BHR,Bahrain,2021,17.4
+JAM,Jamaica,2019,17.8
+BWA,Botswana,2024,18
+BWA,Botswana,2021,18
+BWA,Botswana,2019,18
+MYS,Malaysia,2024,18.8
+MYS,Malaysia,2021,18.8
+BHR,Bahrain,2019,18.9
+RWA,Rwanda,2024,18.98
+RWA,Rwanda,2021,18.98
+RWA,Rwanda,2019,18.98
+DZA,Algeria,2024,19
+DZA,Algeria,2021,19
+DZA,Algeria,2019,19
+ZMB,Zambia,2024,20
+ZMB,Zambia,2021,20
+ZMB,Zambia,2019,20
+KWT,Kuwait,2024,20.4
+KWT,Kuwait,2021,20.4
+KWT,Kuwait,2019,20.4
+CHL,Chile,2024,20.6
+CHL,Chile,2021,20.6
+BRA,Brazil,2024,20.9
+BRA,Brazil,2021,20.9
+THA,Thailand,2024,21
+THA,Thailand,2021,21
+THA,Thailand,2019,21
+BRA,Brazil,2019,21.1
+CHL,Chile,2019,21.2
+SWE,Sweden,2024,21.4
+SWE,Sweden,2021,21.4
+TUN,Tunisia,2024,21.8
+TUN,Tunisia,2021,21.8
+TUN,Tunisia,2019,21.8
+SAU,Saudi Arabia,2019,22.3
+SAU,Saudi Arabia,2024,22.4
+SAU,Saudi Arabia,2021,22.4
+PAN,Panama,2024,22.5
+PAN,Panama,2021,22.5
+PAN,Panama,2019,22.5
+ZAF,South Africa,2024,23
+ZAF,South Africa,2021,23
+ZAF,South Africa,2019,23
+SWE,Sweden,2019,23.4
+URY,Uruguay,2024,24.3
+URY,Uruguay,2021,24.3
+GBR,United Kingdom,2024,24.6
+GBR,United Kingdom,2021,24.6
+SGP,Singapore,2019,24.8
+URY,Uruguay,2019,24.8
+SGP,Singapore,2024,24.9
+SGP,Singapore,2021,24.9
+CAN,Canada,2024,25.2
+CAN,Canada,2021,25.2
+CAN,Canada,2019,25.3
+GBR,United Kingdom,2019,25.4
+NZL,New Zealand,2024,25.7
+NZL,New Zealand,2021,25.7
+DNK,Denmark,2024,26
+DNK,Denmark,2021,26
+VNM,Viet Nam,2024,26
+VNM,Viet Nam,2021,26
+VNM,Viet Nam,2019,26
+DNK,Denmark,2019,26.1
+LBN,Lebanon,2024,27.3
+LBN,Lebanon,2021,27.3
+LBN,Lebanon,2019,27.3
+NZL,New Zealand,2019,27.3
+TUR,Turkiye,2019,27.5
+USA,United States,2019,27.7
+ISL,Iceland,2024,28.3
+ISL,Iceland,2021,28.3
+TUR,Turkiye,2024,28.5
+TUR,Turkiye,2021,28.5
+USA,United States,2024,28.7
+USA,United States,2021,28.7
+ALB,Albania,2024,28.9
+ALB,Albania,2021,28.9
+ALB,Albania,2019,28.9
+GEO,Georgia,2024,28.9
+GEO,Georgia,2021,28.9
+GEO,Georgia,2019,28.9
+IRL,Ireland,2019,29.6
+IRL,Ireland,2024,29.7
+IRL,Ireland,2021,29.7
+ESP,Spain,2024,29.7
+ESP,Spain,2021,29.7
+ESP,Spain,2019,29.7
+ISR,Israel,2024,29.8
+ISR,Israel,2021,29.8
+ISR,Israel,2019,29.9
+TTO,Trinidad and Tobago,2024,30.2
+TTO,Trinidad and Tobago,2021,30.2
+TTO,Trinidad and Tobago,2019,30.3
+ISL,Iceland,2019,30.6
+ITA,Italy,2024,31.4
+ITA,Italy,2021,31.4
+ITA,Italy,2019,31.7
+NLD,Netherlands,2024,31.7
+NLD,Netherlands,2021,31.7
+PRT,Portugal,2019,33.9
+CYP,Cyprus,2024,34
+CYP,Cyprus,2021,34
+MUS,Mauritius,2024,34
+MUS,Mauritius,2021,34
+MUS,Mauritius,2019,34
+NLD,Netherlands,2019,34.1
+CYP,Cyprus,2019,34.3
+PRT,Portugal,2024,34.5
+PRT,Portugal,2021,34.5
+BIH,Bosnia and Herzegovina,2024,34.9
+BIH,Bosnia and Herzegovina,2021,34.9
+BIH,Bosnia and Herzegovina,2019,34.9
+FIN,Finland,2024,36.1
+FIN,Finland,2021,36.1
+AUS,Australia,2024,38.4
+AUS,Australia,2021,38.4
+AUS,Australia,2019,38.4
+MNE,Montenegro,2024,38.6
+MNE,Montenegro,2021,38.6
+MNE,Montenegro,2019,39.3
+FIN,Finland,2019,39.7
+UZB,Uzbekistan,2024,39.8
+UZB,Uzbekistan,2021,39.8
+UZB,Uzbekistan,2019,39.8
+CHN,China,2019,40.2
+LKA,Sri Lanka,2024,41.5
+LKA,Sri Lanka,2021,41.5
+LKA,Sri Lanka,2019,41.5
+ARM,Armenia,2024,42
+ARM,Armenia,2021,42
+ARM,Armenia,2019,42
+GRC,Greece,2024,42
+GRC,Greece,2021,42
+GRC,Greece,2019,42
+LUX,Luxembourg,2024,42.6
+LUX,Luxembourg,2021,42.6
+MKD,North Macedonia,2024,42.8
+MKD,North Macedonia,2021,42.8
+CHN,China,2024,43.1
+CHN,China,2021,43.1
+MKD,North Macedonia,2019,43.7
+KGZ,Kyrgyz Republic,2024,44.1
+KGZ,Kyrgyz Republic,2021,44.1
+KGZ,Kyrgyz Republic,2019,44.1
+SVN,Slovenia,2024,44.3
+SVN,Slovenia,2021,44.3
+MLT,Malta,2024,44.9
+MLT,Malta,2021,44.9
+SVN,Slovenia,2019,44.9
+EST,Estonia,2024,45.7
+EST,Estonia,2021,45.7
+CHE,Switzerland,2024,46.3
+CHE,Switzerland,2021,46.3
+LUX,Luxembourg,2019,46.6
+MLT,Malta,2019,46.7
+TJK,Tajikistan,2024,46.7
+TJK,Tajikistan,2021,46.7
+TJK,Tajikistan,2019,46.7
+CHE,Switzerland,2019,46.9
+EST,Estonia,2019,47.6
+AZE,Azerbaijan,2024,48.2
+AZE,Azerbaijan,2021,48.2
+AZE,Azerbaijan,2019,48.2
+ARG,Argentina,2019,49.5
+ARG,Argentina,2024,49.9
+ARG,Argentina,2021,49.9
+HRV,Croatia,2019,54.9
+LVA,Latvia,2024,54.9
+LVA,Latvia,2021,54.9
+HRV,Croatia,2024,55.4
+HRV,Croatia,2021,55.4
+BEL,Belgium,2024,55.8
+BEL,Belgium,2021,55.8
+SRB,Serbia,2019,55.9
+SRB,Serbia,2024,56.1
+SRB,Serbia,2021,56.1
+BEL,Belgium,2019,56.6
+MDA,Moldova,2024,56.6
+MDA,Moldova,2021,56.6
+MDA,Moldova,2019,56.6
+SVK,Slovak Republic,2024,57
+SVK,Slovak Republic,2021,57
+LVA,Latvia,2019,57.2
+SVK,Slovak Republic,2019,57.8
+BRB,Barbados,2019,58.9
+FRA,France,2024,59.1
+FRA,France,2021,59.1
+BRB,Barbados,2024,59.7
+BRB,Barbados,2021,59.7
+FRA,France,2019,60.6
+KAZ,Kazakhstan,2024,60.6
+KAZ,Kazakhstan,2021,60.6
+KAZ,Kazakhstan,2019,60.6
+LTU,Lithuania,2024,64.3
+LTU,Lithuania,2021,64.3
+POL,Poland,2024,65.4
+POL,Poland,2021,65.4
+CZE,Czechia,2024,66.2
+CZE,Czechia,2021,66.2
+POL,Poland,2019,66.4
+CZE,Czechia,2019,66.6
+LTU,Lithuania,2019,66.9
+ROU,Romania,2019,68.4
+ROU,Romania,2024,68.9
+ROU,Romania,2021,68.9
+HUN,Hungary,2019,70
+MNG,Mongolia,2019,70
+HUN,Hungary,2024,70.1
+HUN,Hungary,2021,70.1
+AUT,Austria,2024,72.7
+AUT,Austria,2021,72.7
+BGR,Bulgaria,2019,72.7
+AUT,Austria,2019,74.2
+BGR,Bulgaria,2024,74.5
+BGR,Bulgaria,2021,74.5
+DEU,Germany,2024,80
+DEU,Germany,2021,80
+MNG,Mongolia,2024,80
+MNG,Mongolia,2021,80
+DEU,Germany,2019,80.6
+KOR,"Korea, Rep.",2019,119.8
+KOR,"Korea, Rep.",2024,124.3
+KOR,"Korea, Rep.",2021,124.3
+JPN,Japan,2024,129.8
+JPN,Japan,2021,129.8
+JPN,Japan,2019,131.1

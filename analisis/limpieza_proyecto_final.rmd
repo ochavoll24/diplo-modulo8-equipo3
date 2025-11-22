@@ -1,0 +1,711 @@
+---
+title: "Cleandata"
+author: "Alexis Martinez Xospa"
+date: "2025-11-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+---
+title: "Cleandata"
+author: "Alexis Martinez Xospa"
+date: "2025-11-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r}
+library(tidyverse)    
+library(skimr)        
+library(janitor)      
+#library(naniar)       
+library(GGally)       
+library(corrplot)     
+library(lubridate) 
+library(dplyr)
+library(RSQLite)
+library(dplyr)
+library(sf)
+#library(rnaturalearth)
+#library(rnaturalearthdata)
+```
+
+```{r}
+
+CAMAS <- read.csv("CAMAS.csv", stringsAsFactors = FALSE)
+
+```
+
+```{r}
+MED <- read.csv("MEDICOS.csv", stringsAsFactors = FALSE)
+
+```
+
+```{r}
+POB <- read.csv("POBLACION.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+SAL <- read.csv("GASTO_SALUD.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+ MOR<- read.csv("MORTALIDAD.csv", stringsAsFactors = FALSE)
+```
+
+
+```{r}
+MOR  %>% janitor::clean_names()
+```
+
+
+```{r}
+# 2) Estructura
+glimpse(df)
+skimr::skim(df)
+
+# 3) NA: conteo y visual
+colSums(is.na(df))
+naniar::gg_miss_var(df)          
+
+
+# 4) Resúmen 
+num_cols <- df %>% select(where(is.numeric))
+cat_cols <- df %>% select(where(~is.character(.x) || is.factor(.x)))
+
+summary(num_cols)
+cat_cols %>% summarise(across(everything(), ~n_distinct(.)))  # cardinalidad
+
+cat_cols %>% map(~janitor::tabyl(.x) %>% janitor::adorn_pct_formatting())  # frecuencias
+
+# 5) Distribuciones 
+num_cols %>% 
+  pivot_longer(everything(), names_to = "var", values_to = "val") %>%
+  ggplot(aes(val)) + 
+  geom_histogram(bins = 30) + 
+  facet_wrap(~ var, scales = "free")
+
+
+```
+
+
+```{r}
+df_MED_ALB <- MED %>% filter(REF_AREA_LABEL == "Albania")
+```
+
+
+```{r}
+POB_ALB <- POB %>% filter(REF_AREA_LABEL == "Albania")
+```
+
+```{r}
+skim(df_nuevo)
+```
+
+```{r}
+df_fil_1 %>% 
+  count(REF_AREA_LABEL, OBS_STATUS, name = "n") %>% 
+  arrange(REF_AREA_LABEL, desc(n))
+```
+
+
+```{r}
+df_fil_3 %>% distinct(UNIT_MEASURE)
+```
+
+```{r}
+df_nuevo <- df_2[ , c("AGG_METHOD", "AGG_METHOD_LABEL", "DECIMALS","DECIMALS_LABEL","COMMENT_TS","COMMENT_TS","DATA_SOURCE","DATA_SOURCE_LABEL")]
+```
+
+
+AGG_METHOD	AGG_METHOD_LABEL	DECIMALS	DECIMALS_LABEL	COMMENT_TS	DATA_SOURCE	DATA_SOURCE_LABEL
+
+```{r}
+df_CAM_MED <- left_join(x = MED, y = CAMAS, by = c("REF_AREA_LABEL", "TIME_PERIOD"))
+```
+
+```{r}
+write.csv(df_CAM_MED, "mi_df.csv", row.names = FALSE)
+```
+
+```{r}
+colnames(MED)
+```
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+
+dbWriteTable(con, "df_CAM_MED", df_CAM_MED, overwrite = TRUE)
+
+```
+
+```{r}
+POB_CAM <- left_join(x = POB, y = CAMAS, by = c("REF_AREA_LABEL", "TIME_PERIOD"))
+```
+
+
+```{r}
+sql_cte <- "
+SELECT
+  \"OBS_VALUE.x\" AS OBS_VALUE_MED
+ , \"OBS_VALUE.y\" AS OBS_VALUE_CAM
+ ,\"INDICATOR_LABEL.x\" AS INDICATOR_LABEL_MED
+ ,\"INDICATOR_LABEL.Y\" AS INDICATOR_LABEL_CAM
+,\"UNIT_MEASURE.x\" AS UNIT_MEASURE_MED
+,\"UNIT_MEASURE.Y\" AS UNIT_MEASURE_CAM
+,\"COMP_BREAKDOWN_1_LABEL.x\" AS COMP_BREAKDOWN_1_LABEL_MED
+,\"COMP_BREAKDOWN_1_LABEL.y\" AS COMP_BREAKDOWN_1_LABEL_CAM
+,\"DATABASE_ID_LABEL.x\" AS DATABASE_ID_LABEL_MED
+,\"DATABASE_ID_LABEL.y\" AS DATABASE_ID_LABEL_CAM
+FROM df_CAM_MED
+"
+
+VIS_1 <- dbGetQuery(con, sql_cte)
+```
+
+
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+
+dbWriteTable(con, "POB_CAM", POB_CAM, overwrite = TRUE)
+
+```
+
+```{r}
+##¿Qué países (o entidades) tienen mayor y menor número de camas hospitalarias por habitante? GRAFICAR Y HACER UN TOP X 
+sql_cte <- "
+SELECT
+REF_AREA_LABEL
+,TIME_PERIOD
+  ,\"OBS_VALUE.x\" AS OBS_VALUE_POB
+ , \"OBS_VALUE.y\" AS OBS_VALUE_CAM
+ ,\"OBS_VALUE.y\" * \"OBS_VALUE.x\" / 10000 as OBS_VALUE_CAM_TOT
+ ,\"INDICATOR_LABEL.x\" AS INDICATOR_LABEL_POB
+ ,\"INDICATOR_LABEL.Y\" AS INDICATOR_LABEL_CAM
+,\"UNIT_MEASURE.x\" AS UNIT_MEASURE_POB
+,\"UNIT_MEASURE.Y\" AS UNIT_MEASURE_CAM
+,\"COMP_BREAKDOWN_1_LABEL.x\" AS COMP_BREAKDOWN_1_LABEL_POB
+,\"COMP_BREAKDOWN_1_LABEL.y\" AS COMP_BREAKDOWN_1_LABEL_CAM
+,\"DATABASE_ID_LABEL.x\" AS DATABASE_ID_LABEL_POB_POB
+,\"DATABASE_ID_LABEL.y\" AS DATABASE_ID_LABEL_CAM
+
+FROM POB_CAM
+
+"
+
+VIS_2 <- dbGetQuery(con, sql_cte)
+```
+
+```{r}
+VIS_2 <- VIS_2 %>%
+  mutate(
+    across(starts_with("OBS_VALUE"), as.numeric),
+    cam_vs_pob = OBS_VALUE_CAM_TOT / OBS_VALUE_POB,
+    TIME_PERIOD_ = ymd(paste0(TIME_PERIOD, "-01-01"))
+  )
+```
+
+
+
+```{r}
+write.csv(VIS_2, "unos.CSV", row.names = FALSE)
+```
+
+
+
+```{r}
+VIS_2_top10 <- VIS_2 %>%
+  filter(
+    year(TIME_PERIOD_) > 2018,
+    COMP_BREAKDOWN_1_LABEL_CAM == "Type: Value"
+  ) %>%
+  mutate(
+    ANIO = year(TIME_PERIOD_)   
+  ) %>%
+  group_by(ANIO) %>%
+  slice_min(order_by = OBS_VALUE_CAM_TOT, n = 10, with_ties = FALSE) %>%
+  ungroup()
+```
+
+
+
+```{r}
+VIS_2_top10_max <- VIS_2 %>%
+  filter(
+    year(TIME_PERIOD_) > 2018,
+    COMP_BREAKDOWN_1_LABEL_CAM == "Type: Value"
+  ) %>%
+  mutate(
+    ANIO = year(TIME_PERIOD_)   
+  ) %>%
+  group_by(ANIO) %>%
+  slice_max(order_by = OBS_VALUE_CAM_TOT, n = 10, with_ties = FALSE) %>%
+  ungroup()
+```
+
+
+
+
+```{r}
+VIS_2_top10 %>%
+  ggplot(aes(
+    x = reorder(REF_AREA_LABEL, OBS_VALUE_CAM_TOT),
+    y = OBS_VALUE_CAM_TOT
+  )) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~ ANIO) +
+  labs(
+    x = "Área",
+    y = "Camas del total de población",
+    title = "Top 10 áreas con menos camas por poblacion  por año"
+  )
+```
+
+```{r}
+VIS_2_top10_max %>%
+  ggplot(aes(
+    x = reorder(REF_AREA_LABEL, OBS_VALUE_CAM_TOT),
+    y = OBS_VALUE_CAM_TOT
+  )) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~ ANIO) +
+  labs(
+    x = "Área",
+    y = "Camas del total de población",
+    title = "Top 10 áreas con mas camas por poblacion  por año"
+  )
+```
+```{r}
+#SE INCLUYE SEGURIDAD SOCIAL
+SALud_ <- SAL %>% filter(TIME_PERIOD > 2018,UNIT_MEASURE_LABEL == "Domestic currency",COMP_BREAKDOWN_1_LABEL=="Sector: Social security funds")
+
+#SE PUEDE CAMBIAR POR Percentage of GDP O Percentage of expenditure
+
+```
+
+```{r}
+SAL %>% distinct(UNIT_MEASURE_LABEL)
+```
+```{r}
+gASTO_dESTINADO_SALUD <- left_join(x = SALud_, y = CAMAS, by = c("REF_AREA_LABEL", "TIME_PERIOD"))
+```
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+
+dbWriteTable(con, "gASTO_dESTINADO_SALUD", gASTO_dESTINADO_SALUD, overwrite = TRUE)
+```
+
+```{r}
+sql_cte <- "
+SELECT
+REF_AREA_LABEL
+,TIME_PERIOD
+  ,\"OBS_VALUE.x\" AS OBS_VALUE_SALUD
+ , \"OBS_VALUE.y\" AS OBS_VALUE_CAM
+ ,\"OBS_VALUE.y\" * \"OBS_VALUE.x\" / 10000 as OBS_VALUE_CAM_SALUD
+ ,\"INDICATOR_LABEL.x\" AS INDICATOR_LABEL_SALUD
+ ,\"INDICATOR_LABEL.Y\" AS INDICATOR_LABEL_CAM
+,\"UNIT_MEASURE.x\" AS UNIT_MEASURE_SALUD
+,\"UNIT_MEASURE.Y\" AS UNIT_MEASURE_CAM
+,\"COMP_BREAKDOWN_1_LABEL.x\" AS COMP_BREAKDOWN_1_LABEL_SALUD
+,\"COMP_BREAKDOWN_1_LABEL.y\" AS COMP_BREAKDOWN_1_LABEL_CAM
+,\"DATABASE_ID_LABEL.x\" AS DATABASE_ID_LABEL_SALUD
+,\"DATABASE_ID_LABEL.y\" AS DATABASE_ID_LABEL_CAM
+
+FROM gASTO_dESTINADO_SALUD
+
+"
+
+VIS_3 <- dbGetQuery(con, sql_cte)
+```
+
+```{r}
+#HACER VISUALIZACION PARA ¿Existe relación entre el gasto en salud y la disponibilidad de camas? 
+
+VIS_3_FINAL <- VIS_3 %>%
+  filter(
+    TIME_PERIOD > 2018,
+    COMP_BREAKDOWN_1_LABEL_CAM == "Type: Value"
+  )
+
+
+
+```
+
+
+```{r}
+write.csv(VIS_3, "unos.CSV", row.names = FALSE)
+```
+
+
+```{r}
+min(SAL$TIME_PERIOD)
+```
+
+
+```{r}
+mor_1 <- MOR %>%
+  select(INDICATOR_LABEL,REF_AREA_LABEL,TIME_PERIOD,OBS_VALUE,OBS_STATUS_LABEL,SEX,OBS_STATUS)
+```
+
+```{r}
+sal_1 <- SAL %>%
+  select(REF_AREA_LABEL
+,INDICATOR_LABEL
+,COMP_BREAKDOWN_1_LABEL
+,TIME_PERIOD
+,OBS_VALUE
+,UNIT_MEASURE_LABEL)
+```
+
+
+```{r}
+PR <- DB_mod_mor %>% filter(REF_AREA_LABEL == "Albania",)
+```
+
+```{r}
+sal_1_wide <- sal_1 %>%
+  pivot_wider(
+    id_cols   = c(REF_AREA_LABEL, INDICATOR_LABEL, TIME_PERIOD),
+    names_from  = c(COMP_BREAKDOWN_1_LABEL, UNIT_MEASURE_LABEL),    
+    values_from = OBS_VALUE,
+    names_sep   = "_"                                              
+  )
+
+
+```
+
+```{r}
+POB_1 <- POB %>%
+  select(REF_AREA_LABEL
+,INDICATOR_LABEL
+,TIME_PERIOD
+,OBS_VALUE
+)
+```
+
+
+
+```{r}
+CAM_1 <- CAMAS %>%
+  select(REF_AREA_LABEL
+,INDICATOR_LABEL
+,COMP_BREAKDOWN_1_LABEL
+,TIME_PERIOD
+,OBS_VALUE
+)
+```
+
+```{r}
+MED_1 <- MED %>%
+  select(REF_AREA_LABEL
+,INDICATOR_LABEL
+,TIME_PERIOD
+,OBS_VALUE
+)
+```
+
+
+```{r}
+sal_1_widea <- sal_1_wide %>% filter(REF_AREA_LABEL == "Albania",) 
+```
+
+```{r}
+ubi <-unique(POB_1$REF_AREA_LABEL) 
+```
+
+
+```{r}
+
+DB_mod_mor <- mor_1 %>% 
+  left_join(POB_1,  by = c("REF_AREA_LABEL", "TIME_PERIOD")) %>% 
+  left_join(sal_1_wide,  by = c("REF_AREA_LABEL", "TIME_PERIOD")) %>% 
+  left_join(MED_1,  by = c("REF_AREA_LABEL", "TIME_PERIOD"))
+
+```
+
+```{r}
+write.csv(CAM_1, "CAM_1.CSV", row.names = FALSE)
+```
+
+```{r}
+country <- data.frame(
+  REF_AREA_LABEL = sort(unique(POB_1$REF_AREA_LABEL))
+)
+```
+
+
+```{r}
+coords_paises <- rnaturalearth::ne_countries(
+  scale = "medium",
+  returnclass = "sf"
+) |>
+  st_point_on_surface() |>
+  mutate(
+    lon = st_coordinates(geometry)[, 1],
+    lat = st_coordinates(geometry)[, 2]
+  ) |>
+  transmute(
+            
+    REF_AREA_LABEL = name_long,  
+    lat,
+    lon
+  ) |>
+  st_drop_geometry()
+
+
+DB_coords <- country |>
+  left_join(coords_paises, by = "REF_AREA_LABEL")
+```
+
+
+# data for the shinyapp
+
+```{r}
+
+beds <-
+CAMAS %>% filter(COMP_BREAKDOWN_1_LABEL == "Type: Value" & OBS_VALUE!= 0) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , beds = sum(OBS_VALUE,na.rm = T)/10
+  )
+
+med <-
+MED %>% filter(TIME_PERIOD>= 2019 & OBS_VALUE!= 0) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , physicians = sum(OBS_VALUE,na.rm = T)
+  ) %>% arrange(REF_AREA_LABEL)
+
+pop<-
+POB %>% filter(TIME_PERIOD>= 2019 & OBS_VALUE!= 0) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , population = sum(OBS_VALUE,na.rm = T)/1000000
+  ) %>% arrange(REF_AREA_LABEL)
+
+
+spend<-
+SAL %>% filter(TIME_PERIOD>= 2019 & OBS_VALUE!= 0 & UNIT_MEASURE_LABEL == "Domestic currency" 
+               & COMP_BREAKDOWN_1_LABEL %in% c("Sector: General government","Sector: State governments","Sector: Local government","Sector: Social security funds")
+               ) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , health_spend = sum(OBS_VALUE,na.rm = T)/1000000
+  ) %>% arrange(desc(REF_AREA_LABEL))
+
+mort<-
+MOR %>% filter(TIME_PERIOD>= 2019 & OBS_VALUE!= 0) %>% 
+  summarise(
+    .by = c(TIME_PERIOD,REF_AREA,REF_AREA_LABEL)
+    , mortality = mean(OBS_VALUE,na.rm = T)
+  ) %>% arrange(desc(REF_AREA_LABEL))
+
+
+beds %>% 
+  full_join(med) %>% 
+  full_join(pop) %>% 
+  full_join(spend) %>% 
+  full_join(mort) %>% 
+  mutate(across(where(is.numeric), ~ replace_na(.x, 0))) %>% 
+  select(
+    yr = TIME_PERIOD
+    ,country = REF_AREA_LABEL
+    ,beds
+    ,physicians
+    ,population
+    ,health_spend
+    ,mortality
+  ) %>% 
+  write.csv(
+    "healthcare_data.csv", row.names = F
+  )
+
+
+```
+
+```{r,include=FALSE}
+df_camas <- read_csv("B:/clope/Documents/R/diplo-modulo8-equipo3/datos/CAMAS.csv")
+```
+```{r,include=FALSE}
+head(df_camas)
+```
+
+```{r,include=FALSE}
+df_camas <- janitor::clean_names(df_camas)
+```
+
+```{r,include=FALSE}
+head(df_camas)
+```
+
+
+
+```{r,include=FALSE}
+df_camas <- df_camas %>% mutate(time_period = as.factor(time_period))
+```
+
+
+
+```{r,echo=FALSE}
+ggplot(df_camas, aes(x= time_period, y = obs_value,fill=time_period)) + 
+  stat_boxplot(geom = "errorbar", # Barras error
+               width = 0.25) +    # Grosor barras
+  geom_boxplot()+
+  guides(fill = guide_legend(title = "Año"))+
+   scale_y_continuous(labels = label_number())+
+  labs(x = "Año", y = "Camas por cada 10 mil habitantes")+
+  theme("ligth")+
+   theme(legend.position = "none")
+
+``` 
+
+```{r, echo=FALSE}
+resultados <-df_camas %>%
+  group_by(time_period) %>%
+  summarise(
+    Media = mean(obs_value),
+    DesviacionEstandar = sd(obs_value)
+  )
+print(resultados)
+```
+
+```{r,include=FALSE}
+df_2024 <-df_camas %>% dplyr::filter(time_period==2024)
+df_2024
+```
+
+```{r,include=FALSE}
+top20 <- df_2024 %>%
+  arrange(desc(obs_value)) %>%
+  slice_head(n = 20)
+```
+
+```{r,include=FALSE}
+head(top20)
+```
+
+
+```{r,echo=FALSE}
+ggplot(top20, aes(x = reorder(ref_area_label,obs_value), y = obs_value)) +
+  geom_bar(stat = "identity", fill=4) +
+  coord_flip()+
+labs(title = "Veinte países con más disponibilidad de camas de hospital, 2024", x = "", y = "Camas por cada 10 mil habitantes") 
+
+```
+
+## Países con menos camas por habitantes. 
+
+```{r,include=FALSE}
+bottom20 <- df_2024 %>%
+  arrange(obs_value) %>%
+  slice_head(n = 20)
+```
+
+```{r,include=FALSE}
+head(bottom20)
+```
+
+
+```{r,echo=FALSE}
+ggplot(bottom20, aes(x = reorder(ref_area_label,-obs_value), y = obs_value)) +
+  geom_bar(stat = "identity", fill=4) +
+  coord_flip()+
+labs(title = "Veinte países con menos camas de hospital disponibles, 2024", x = "", y = "Camas por cada 10 mil habitantes") 
+
+```
+```{r,include=FALSE}
+df_comp <- read_excel("B:/clope/Documents/R/diplo-modulo8-equipo3/datos/compilada.xlsx")
+```
+
+
+```{r}
+head(df_comp)
+```
+
+```{r}
+comp_num <- df_comp %>% select(where(is.numeric),-periodo)
+```
+
+
+
+```{r,echo=FALSE,warning=FALSE}
+ggpairs(comp_num
+        )
+```
+
+
+```{r,echo=FALSE}
+ggplot(comp_num, aes(x = ga_salud_per, y = camas, color = camas)) +
+  
+  geom_point(colour="red")+
+  
+  labs(title = "Disponibilidad de Camas vs gasto en salud", 
+       x= "Gasto en salud percápita en dólares",
+       y= "Camas por 10 mil habitantes") +
+  theme(plot.title = element_text(face = "bold",
+                                  color = "midnightblue",
+                                  size = 16))+
+  theme(axis.title = element_text(size = 14,
+                                  color="black",
+                                  face= "italic")) +
+  theme(axis.text = element_text(size = 12))+
+  guides(color= guide_legend(title = "")) + 
+  theme(legend.title = element_text(color = "lightslategray",
+                                    size = 12))+
+  theme(legend.position = "bottom")+
+  theme(legend.text = element_text(colour="black", size=12, 
+                                     face="bold"))+
+   geom_smooth(method=lm,linetype="dotdash",colour="blue")
+  
+  
+  
+```
+
+
+
+
+
+
+
+```{r,echo=FALSE}
+ggplot(comp_num, aes(x = gasto_salud_por, y = camas, color = camas)) +
+  
+  geom_point(colour="red")+
+  #coord_cartesian(ylim = c(20, 70))+
+  labs(title = "Disponibilidad de camas vs gasto en salud",
+       x= "Gasto en salud como porcentaje del PIB",
+       y= "Camas por 10 mil habitantes") +
+  theme(plot.title = element_text(face = "bold",
+                                  color = "midnightblue",
+                                  size = 1))+
+  theme(axis.title = element_text(size = 14,
+                                  color="black",
+                                  face= "italic")) +
+  theme(axis.text = element_text(size = 12))+
+  guides(color= guide_legend(title = "")) + 
+  theme(legend.title = element_text(color = "lightslategray",
+                                    size = 12))+
+  theme(legend.position = "bottom")+
+  theme(legend.text = element_text(colour="black", size=12, 
+                                     face="bold"))+
+   geom_smooth(method=lm,linetype="dotdash",colour="blue")
+  
+  
+  
+```
