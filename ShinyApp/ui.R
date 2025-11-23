@@ -1,4 +1,5 @@
 
+
 # ui.R
 shinyUI(
   navbarPage(
@@ -194,6 +195,8 @@ shinyUI(
       )
     ),
     
+    
+    
     # ============================================
     # TRENDS TAB
     # ============================================
@@ -305,6 +308,47 @@ shinyUI(
           )
         )
       )
+    ),
+    
+    
+    # ============================================
+    # MAPA TAB
+    # ============================================
+    tabPanel(
+      "MAPA INTERACTIVO",
+      icon = icon("chart-line"),
+      
+      fluidRow(
+        column(
+          width = 12,
+          tags$div(
+            style = "background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); 
+                     padding: 30px; border-radius: 15px; margin-bottom: 20px; color: white;",
+            h2("Mapa interactivo", style = "color: white; margin: 0;"),
+            p("Selecciona un pais y observa la información hospitalaria", 
+              style = "color: white; opacity: 0.9; margin-top: 10px;")
+          )
+        )
+      ),
+      
+      sidebarLayout(
+        sidebarPanel(
+          selectInput("year", "Select Year:",
+                      choices = sort(unique(healthcare_data$yr)),
+                      selected = max(healthcare_data$yr)),
+          width = 3
+        ),
+        
+        mainPanel(
+          leafletOutput("map", height = 600),
+          hr(),
+          h4("Country Information"),
+          verbatimTextOutput("info"),
+          width = 9
+        )
+      )
+      
+      
     ),
     
     # ============================================
@@ -451,3 +495,4 @@ shinyUI(
     )
   )
 )
+

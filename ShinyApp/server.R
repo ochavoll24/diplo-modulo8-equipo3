@@ -103,6 +103,61 @@ shinyServer(function(input, output, session) {
     ggplotly(p, tooltip = c("y", "x"))
   })
   
+  
+  # ============================================
+  # MAPA TAB OUTPUTS
+  # ============================================
+  
+  # Main trend line plot
+  # Filter dataset by selected year
+  data_year <- reactive({
+    healthcare_data %>% filter(yr == input$year)
+  })
+  
+  world_data <- reactive({
+    world_shape %>% 
+      left_join(data_year(), by = c("name" = "country"))
+  })
+  
+  output$map <- renderLeaflet({
+    leaflet(world_data()) %>%
+      addTiles() %>%
+      addPolygons(
+        fillColor = "lightblue",
+        fillOpacity = 0.6,
+        color = "black",
+        weight = 1,
+        layerId = ~name,
+        popup = ~paste0(
+          "<b>", name, "</b><br>",
+          "Beds: ", beds, "<br>",
+          "Population: ", population, "<br>",
+          "Mortality: ", mortality, "<br>",
+          "Gasto Salud: ", health_spend
+        )
+      )
+  })
+  
+  output$info <- renderPrint({
+    click <- input$map_shape_click
+    if (is.null(click)) return("Click a country on the map")
+    
+    country_clicked <- click$id
+    dat <- data_year() %>% filter(country == country_clicked)
+    
+    if (nrow(dat) == 0)
+      return(paste("No data for:", country_clicked))
+    
+    list(
+      Country    = country_clicked,
+      Year       = input$year,
+      Beds       = dat$beds,
+      Population = dat$population,
+      Mortality  = dat$mortality,
+      GastoSalud = dat$health_spend
+    )
+  })
+  
   # ============================================
   # TRENDS TAB OUTPUTS
   # ============================================
@@ -218,6 +273,7 @@ shinyServer(function(input, output, session) {
     summary(regression_model())
   })
   
+  
   # Residual plot
   output$residual_plot <- renderPlotly({
     req(regression_model())
@@ -315,3 +371,4 @@ shinyServer(function(input, output, session) {
   })
   
 })
+
